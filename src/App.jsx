@@ -48,12 +48,17 @@ const COUNTRIES = [
 ];
 
 const CATEGORIES = [
-  { id: "Flyers",       name: "Flyers",       icon: "📄" },
+  { id: "Flyers",       name: "Flyers",               icon: "📄" },
   { id: "Flyer_Design", name: "Flyer Packing Machine", icon: "🖨️" },
-  { id: "Sacola_CPG",   name: "Sacola CPG",   icon: "🛍️" },
-  { id: "Gift_Bag",     name: "Gift Bag",     icon: "🎁" },
-  { id: "Caixas",       name: "Caixas",       icon: "📦" },
-  { id: "Cintas",       name: "Cintas",       icon: "🎀" },
+  { id: "Sacola_CPG",   name: "Sacola CPG",            icon: "🛍️" },
+  { id: "Gift_Bag",     name: "Gift Bag",              icon: "🎁" },
+  { id: "Caixas",       name: "Caixas",                icon: "📦" },
+  { id: "Cintas",       name: "Cintas",                icon: "🎀" },
+];
+
+const SUBCATEGORIES = [
+  { id: "Versao_Provas", name: { pt: "Versão de Provas", es: "Versión de Pruebas" }, icon: "🔍" },
+  { id: "Versao_Final",  name: { pt: "Versão Final",     es: "Versión Final"      }, icon: "✅" },
 ];
 
 const PRINT_CARD_STEPS = {
@@ -128,6 +133,7 @@ export default function App() {
   const [lang, setLang]             = useState("pt");
   const [country, setCountry]       = useState(null);
   const [category, setCategory]     = useState(null);
+  const [subcat, setSubcat]         = useState(null);
   const [files, setFiles]           = useState([]);
   const [folderIds, setFolderIds]   = useState({});
   const [loading, setLoading]       = useState(false);
@@ -139,6 +145,7 @@ export default function App() {
   const T = TRANSLATIONS[lang];
   const countryObj  = COUNTRIES.find(c => c.id === country);
   const categoryObj = CATEGORIES.find(c => c.id === category);
+  const subcatObj   = SUBCATEGORIES.find(s => s.id === subcat);
 
   async function ensureFolder(name, parentId) {
     const prompt = parentId
@@ -167,11 +174,11 @@ export default function App() {
     return extractJSON(data) || [];
   }
 
-  const loadFiles = useCallback(async (cty, cat) => {
+  const loadFiles = useCallback(async (cty, cat, sub) => {
     setLoading(true);
     setStatus(T.loading);
     try {
-      const fid  = await getOrCreateCategoryFolder(cty, cat);
+      const fid  = await getOrCreateCategoryFolder(cty, `${cat}/${sub}`);
       const list = await listFiles(fid);
       setFiles(list);
     } catch { setStatus("Erro."); }
@@ -192,8 +199,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (view === "category" && country && category) loadFiles(country, category);
-  }, [view, country, category]);
+    if (view === "files" && country && category && subcat) loadFiles(country, category, subcat);
+  }, [view, country, category, subcat]);
 
   useEffect(() => {
     if (view === "country" && country) {
@@ -208,7 +215,7 @@ export default function App() {
     setUploading(true);
     setStatus(`${T.uploading} "${file.name}"...`);
     try {
-      const fid = await getOrCreateCategoryFolder(country, category);
+      const fid = await getOrCreateCategoryFolder(country, `${category}/${subcat}`);
       const reader = new FileReader();
       reader.onload = async (ev) => {
         const b64  = ev.target.result.split(",")[1];
@@ -219,7 +226,7 @@ export default function App() {
         const j = extractJSON(data);
         if (j?.success || j?.fileId) {
           setStatus("✅ Upload concluído!");
-          await loadFiles(country, category);
+          await loadFiles(country, category, subcat);
         } else { setStatus("⚠️ Erro no upload."); }
         setUploading(false);
         setTimeout(() => setStatus(""), 3000);
@@ -229,9 +236,10 @@ export default function App() {
     e.target.value = "";
   }
 
-  const goHome    = () => { setView("home"); setCountry(null); setCategory(null); setFiles([]); setCatFileCounts({}); };
-  const goCountry = () => { setView("country"); setCategory(null); setFiles([]); };
-  const steps     = country ? (PRINT_CARD_STEPS[lang][country] || []) : [];
+  const goHome     = () => { setView("home"); setCountry(null); setCategory(null); setSubcat(null); setFiles([]); setCatFileCounts({}); };
+  const goCountry  = () => { setView("country"); setCategory(null); setSubcat(null); setFiles([]); };
+  const goCategory = () => { setView("category"); setSubcat(null); setFiles([]); };
+  const steps      = country ? (PRINT_CARD_STEPS[lang][country] || []) : [];
 
   if (view === "lang") return (
     <div style={{ ...css.app, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
@@ -270,7 +278,8 @@ export default function App() {
         <div style={css.crumb}>
           <button style={css.crumbBtn} onClick={goHome}>🏠 {lang === "pt" ? "Início" : "Inicio"}</button>
           {country && <><span>›</span><button style={css.crumbBtn} onClick={goCountry}>{countryObj?.code} · {country}</button></>}
-          {category && <><span>›</span><span style={{ color: "#333" }}>{categoryObj?.icon} {categoryObj?.name}</span></>}
+          {category && <><span>›</span><button style={css.crumbBtn} onClick={goCategory}>{categoryObj?.icon} {categoryObj?.name}</button></>}
+          {subcat && <><span>›</span><span style={{ color: "#333" }}>{subcatObj?.icon} {subcatObj?.name[lang]}</span></>}
           {view === "guide" && <><span>›</span><span style={{ color: "#333" }}>📋 {T.printGuide}</span></>}
         </div>
       )}
@@ -326,6 +335,30 @@ export default function App() {
         )}
 
         {view === "category" && countryObj && categoryObj && (
+          <>
+            <div style={{ ...css.banner(C.blue), justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 34 }}>{categoryObj.icon}</span>
+                <div>
+                  <div style={{ color: C.yellow, fontWeight: 800, fontSize: 18 }}>{categoryObj.name}</div>
+                  <div style={{ color: "#aaa", fontSize: 12 }}>{countryObj.code} · {country}</div>
+                </div>
+              </div>
+            </div>
+            <div style={css.secTitle}>{lang === "pt" ? "Selecione a pasta" : "Seleccioná la carpeta"}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              {SUBCATEGORIES.map(s => (
+                <div key={s.id} className="ch" style={{ ...css.card, padding: "28px 20px" }}
+                  onClick={() => { setSubcat(s.id); setView("files"); }}>
+                  <div style={{ fontSize: 36, marginBottom: 10 }}>{s.icon}</div>
+                  <div style={{ fontWeight: 700, color: C.blue, fontSize: 15 }}>{s.name[lang]}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {view === "files" && countryObj && categoryObj && subcatObj && (
           <>
             <div style={css.banner(C.blue)}>
               <span style={{ fontSize: 34 }}>{categoryObj.icon}</span>
