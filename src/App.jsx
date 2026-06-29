@@ -93,7 +93,6 @@ const PRINT_CARD_STEPS = {
 };
 
 const STORAGE_KEY = "meli_portal_links";
-
 function loadLinks() {
   try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : {}; } catch { return {}; }
 }
@@ -137,15 +136,14 @@ export default function App() {
   const [newName, setNewName]       = useState("");
   const [newUrl, setNewUrl]         = useState("");
   const [isAdmin, setIsAdmin]       = useState(false);
-  const [adminInput, setAdminInput] = useState("");
 
-  const T          = TRANSLATIONS[lang];
-  const countryObj = COUNTRIES.find(c => c.id === country);
-  const categoryObj= CATEGORIES.find(c => c.id === category);
-  const subcatObj  = SUBCATEGORIES.find(s => s.id === subcat);
-  const fileKey    = `${country}_${category}_${subcat}`;
+  const T           = TRANSLATIONS[lang];
+  const countryObj  = COUNTRIES.find(c => c.id === country);
+  const categoryObj = CATEGORIES.find(c => c.id === category);
+  const subcatObj   = SUBCATEGORIES.find(s => s.id === subcat);
+  const fileKey     = `${country}_${category}_${subcat}`;
   const currentFiles = links[fileKey] || [];
-  const steps      = country ? (PRINT_CARD_STEPS[lang][country] || []) : [];
+  const steps       = country ? (PRINT_CARD_STEPS[lang][country] || []) : [];
 
   useEffect(() => { setLinks(loadLinks()); }, []);
 
@@ -168,10 +166,9 @@ export default function App() {
   const goCountry  = () => { setView("country"); setCategory(null); setSubcat(null); };
   const goCategory = () => { setView("category"); setSubcat(null); };
 
-  // ── Lang screen ───────────────────────────────────────
   if (view === "lang") return (
     <div style={{ ...css.app, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} .ch:hover{transform:translateY(-4px)!important}`}</style>
+      <style>{`.ch:hover{transform:translateY(-4px)!important}`}</style>
       <div style={{ background: C.blue, borderRadius: 24, padding: "48px 40px", textAlign: "center", boxShadow: "0 8px 32px rgba(0,0,0,.2)", maxWidth: 400, width: "90%" }}>
         <div style={{ background: C.yellow, borderRadius: 12, padding: "8px 20px", fontWeight: 900, fontSize: 22, color: C.blue, display: "inline-block", marginBottom: 24 }}>MELI</div>
         <div style={{ color: C.white, fontWeight: 800, fontSize: 20, marginBottom: 8 }}>Portal Packaging</div>
@@ -192,9 +189,8 @@ export default function App() {
 
   return (
     <div style={css.app}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}} .ch:hover{transform:translateY(-4px)!important}`}</style>
+      <style>{`.ch:hover{transform:translateY(-4px)!important}`}</style>
 
-      {/* Header */}
       <div style={css.header}>
         <div style={css.logo}>MELI</div>
         <p style={css.htitle}>{T.portalTitle}</p>
@@ -208,7 +204,6 @@ export default function App() {
         </button>
       </div>
 
-      {/* Breadcrumb */}
       {view !== "home" && (
         <div style={css.crumb}>
           <button style={css.crumbBtn} onClick={goHome}>🏠 {lang === "pt" ? "Início" : "Inicio"}</button>
@@ -221,7 +216,6 @@ export default function App() {
 
       <div style={css.body}>
 
-        {/* HOME */}
         {view === "home" && (
           <>
             <div style={css.banner(C.yellow)}>
@@ -243,7 +237,6 @@ export default function App() {
           </>
         )}
 
-        {/* COUNTRY */}
         {view === "country" && countryObj && (
           <>
             <div style={{ ...css.banner(C.blue), justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
@@ -265,7 +258,6 @@ export default function App() {
           </>
         )}
 
-        {/* CATEGORY — subpastas */}
         {view === "category" && countryObj && categoryObj && (
           <>
             <div style={css.banner(C.blue)}>
@@ -291,7 +283,6 @@ export default function App() {
           </>
         )}
 
-        {/* FILES */}
         {view === "files" && countryObj && categoryObj && subcatObj && (
           <>
             <div style={css.banner(C.blue)}>
@@ -305,9 +296,7 @@ export default function App() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
                 <div style={{ fontWeight: 700, color: C.blue, fontSize: 15 }}>{T.files} ({currentFiles.length})</div>
                 {isAdmin && (
-                  <button style={css.blueBtn} onClick={() => setShowModal(true)}>
-                    🔗 {T.addLink}
-                  </button>
+                  <button style={css.blueBtn} onClick={() => setShowModal(true)}>🔗 {T.addLink}</button>
                 )}
               </div>
               {currentFiles.length === 0 ? (
@@ -335,7 +324,6 @@ export default function App() {
           </>
         )}
 
-        {/* GUIDE */}
         {view === "guide" && countryObj && (
           <>
             <div style={css.banner(C.yellow)}>
@@ -362,7 +350,6 @@ export default function App() {
         )}
       </div>
 
-      {/* Modal adicionar link */}
       {showModal && (
         <div style={css.modal} onClick={() => setShowModal(false)}>
           <div style={css.modalBox} onClick={e => e.stopPropagation()}>
