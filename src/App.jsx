@@ -49,7 +49,7 @@ const COUNTRIES = [
 
 const CATEGORIES = [
   { id: "Flyers",       name: "Flyers",       icon: "📄" },
-  { id: "Flyer_Design", name: "Flyer Design", icon: "🎨" },
+  { id: "Flyer_Design", name: "Flyer Packing Machine", icon: "🖨️" },
   { id: "Sacola_CPG",   name: "Sacola CPG",   icon: "🛍️" },
   { id: "Gift_Bag",     name: "Gift Bag",     icon: "🎁" },
   { id: "Caixas",       name: "Caixas",       icon: "📦" },
